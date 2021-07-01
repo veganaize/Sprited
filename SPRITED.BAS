@@ -1,4 +1,4 @@
-' SpriteEd 0.20
+' SpriteEd 0.21
 DECLARE SUB GetMouseState ()
 DECLARE SUB ResetMouse ()
 DECLARE SUB ShowMouse ()
@@ -85,21 +85,22 @@ DO
         
         '''LMB OVER GRID?'''
         IF bx = 1 THEN
-            HideMouse
             x! = x! - (x! MOD 8 - 1)
             y! = y! - (y! MOD 8 - 1)
            
             IF lmbcolor = -1 THEN
+                HideMouse
                 LINE (x!, y!)-STEP(6, 6), 0, BF
                 LINE (x! + 3, y! + 2)-STEP(1, 1), 8, BF
+                ShowMouse
             ELSE
+                HideMouse
                 LINE (x!, y!)-STEP(6, 6), lmbcolor, BF
+                ShowMouse
             END IF
            
             SaveGridState
             pixelgrid(INT(x! / 8), INT(y! / 8)) = lmbcolor
-            ShowMouse
-            
         END IF  'LMB OVER GRID
 
         '''RMB OVER GRID?'''
