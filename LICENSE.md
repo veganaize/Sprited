@@ -1,4 +1,4 @@
-Copyright (C) 2021 by veganaiZe
+Copyright 2021 by veganaiZe
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
 
