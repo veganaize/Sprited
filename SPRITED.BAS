@@ -1,4 +1,4 @@
-' SpriteEd 0.21
+' SpriteEd 0.22
 DECLARE SUB GetMouseState ()
 DECLARE SUB ResetMouse ()
 DECLARE SUB ShowMouse ()
@@ -156,15 +156,23 @@ DO
     END IF 'MB DOWN
 
     kee = INKEY$
+    IF kee <> "" THEN
+        IF kee = "l" OR kee = "L" THEN
+            loadgrid
+        ELSEIF kee = "s" OR kee = "S" THEN
+            savegrid
+        ELSEIF kee = "c" OR kee = "C" THEN
+            ClearGrid
+        ELSEIF kee = "u" OR kee = "U" THEN
+            undo
+        ELSEIF kee = "b" OR kee = "B" THEN
+            loadbsv
+        ELSEIF kee = "x" OR kee = "X" THEN
+            savebsv
+        END IF
+    END IF
 
-    IF kee = "L" OR kee = "l" THEN loadgrid '       "L"
-    IF kee = "S" OR kee = "s" THEN savegrid '       "S"
-    IF kee = "C" OR kee = "c" THEN ClearGrid'       "C"
-    IF kee = "U" OR kee = "u" THEN undo     '       "U"
-    IF kee = "B" OR kee = "b" THEN loadbsv  '       "B"
-    IF kee = "X" OR kee = "x" THEN savebsv  '       "X"
-
-LOOP UNTIL kee = CHR$(27) '                         End of Main Loop.
+LOOP UNTIL kee = CHR$(27) 'Main Loop.
 
 SYSTEM
 
