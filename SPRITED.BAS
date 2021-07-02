@@ -83,7 +83,7 @@ DO
         LOCATE 18, 5: PRINT USING "###"; INT(y! / 8);
         LOCATE 18, 9: PRINT bx
         
-        '''LMB OVER GRID?'''
+        '''LMB DOWN OVER GRID?'''
         IF bx = 1 THEN
             x! = x! - (x! MOD 8 - 1)
             y! = y! - (y! MOD 8 - 1)
@@ -101,10 +101,10 @@ DO
            
             SaveGridState
             pixelgrid(INT(x! / 8), INT(y! / 8)) = lmbcolor
-        END IF  'LMB OVER GRID
+        'END IF  'LMB OVER GRID
 
-        '''RMB OVER GRID?'''
-        IF bx = 2 THEN
+        '''RMB DOWN OVER GRID?'''
+        ELSEIF bx = 2 THEN
             x! = x! - (x! MOD 8 - 1)
             y! = y! - (y! MOD 8 - 1)
           
@@ -121,7 +121,7 @@ DO
           
             SaveGridState
             pixelgrid(INT(x! / 8), INT(y! / 8)) = rmbcolor
-        END IF  'RMB OVER GRID end
+        END IF  'MB DOWN OVER GRID
 
     ELSE  'NOT OVER GRID
         LOCATE 19, 18: PRINT "false"
