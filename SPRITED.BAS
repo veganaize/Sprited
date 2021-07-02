@@ -37,7 +37,7 @@ DIM SHARED rmbcolor AS INTEGER: rmbcolor = 15 '     RMB color
 DIM SHARED kee AS STRING: kee = ""
 DIM SHARED putArray(129) AS INTEGER
 
-TYPE buttons
+TYPE button
     x1 AS INTEGER
     x2 AS INTEGER
     y1 AS INTEGER
@@ -45,7 +45,7 @@ TYPE buttons
     clr AS INTEGER
     style AS STRING * 2
 END TYPE
-DIM SHARED button(31) AS buttons
+DIM SHARED buttons(31) AS button
 
 DIM SHARED bsvArray(130) AS INTEGER
 DIM SHARED pixelgrid(15, 15) AS INTEGER
@@ -134,8 +134,8 @@ DO
     IF bx = 1 THEN
         ' *** Slow way? FOR LOOP -- use table instead **
         FOR i = 0 TO 16
-            IF x! >= button(i).x1 AND x! <= button(i).x2 AND y! >= button(i%).y1 AND y! <= button(i).y2 THEN
-                lmbcolor = button(i).clr
+            IF x! >= buttons(i).x1 AND x! <= buttons(i).x2 AND y! >= buttons(i%).y1 AND y! <= buttons(i).y2 THEN
+                lmbcolor = buttons(i).clr
                 RefreshButtons
             END IF
         NEXT i
@@ -144,8 +144,8 @@ DO
     ELSEIF bx = 2 THEN
         ' *** Slow way? FOR LOOP -- use table instead **
         FOR i = 0 TO 16
-            IF x! >= button(i).x1 AND x! <= button(i).x2 AND y! >= button(i).y1 AND y! <= button(i).y2 THEN
-                rmbcolor = button(i).clr
+            IF x! >= buttons(i).x1 AND x! <= buttons(i).x2 AND y! >= buttons(i).y1 AND y! <= buttons(i).y2 THEN
+                rmbcolor = buttons(i).clr
                 RefreshButtons
             END IF
         NEXT i
@@ -233,18 +233,18 @@ NEXT k
 
 FOR i% = 0 TO 7
     '''Assign color to button's structure.'''
-    button(i%).clr = i%
-    button(i% + 8).clr = i% + 8
-    button(i%).x1 = (20 * 7 + i% * 7)
-    button(i% + 8).x1 = (20 * 7 + i% * 7)
-    button(i%).x2 = button(i%).x1 + 7
-    button(i% + 8).x2 = button(i% + 8).x1 + 7
-    button(i%).y1 = (2 * 7)
-    button(i% + 8).y1 = (2 * 7) + 8
-    button(i%).y2 = (2 * 7 + 7)
-    button(i% + 8).y2 = (2 * 7 + 7) + 8
-    LINE (CSNG(button(i%).x1), CSNG(button(i%).y1))-(CSNG(button(i%).x2), CSNG(button(i%).y2)), i%, BF
-    LINE (CSNG(button(i% + 8).x1), CSNG(button(i% + 8).y1))-(CSNG(button(i% + 8).x2), CSNG(button(i% + 8).y2)), i% + 8, BF
+    buttons(i%).clr = i%
+    buttons(i% + 8).clr = i% + 8
+    buttons(i%).x1 = (20 * 7 + i% * 7)
+    buttons(i% + 8).x1 = (20 * 7 + i% * 7)
+    buttons(i%).x2 = buttons(i%).x1 + 7
+    buttons(i% + 8).x2 = buttons(i% + 8).x1 + 7
+    buttons(i%).y1 = (2 * 7)
+    buttons(i% + 8).y1 = (2 * 7) + 8
+    buttons(i%).y2 = (2 * 7 + 7)
+    buttons(i% + 8).y2 = (2 * 7 + 7) + 8
+    LINE (CSNG(buttons(i%).x1), CSNG(buttons(i%).y1))-(CSNG(buttons(i%).x2), CSNG(buttons(i%).y2)), i%, BF
+    LINE (CSNG(buttons(i% + 8).x1), CSNG(buttons(i% + 8).y1))-(CSNG(buttons(i% + 8).x2), CSNG(buttons(i% + 8).y2)), i% + 8, BF
 NEXT i%
 
 LOCATE 19, 1: PRINT "mouse over grid:"
@@ -277,26 +277,26 @@ SUB HideMouse
 END SUB
 
 SUB InitButtonColors
-    button(16).x1 = 128 + 7         ' Transparancy Button
-    button(16).x2 = 128 + 21
-    button(16).y1 = 64 + 7
-    button(16).y2 = 64 + 21
-    button(16).clr = -1
-    button(16).style = "BF"
+    buttons(16).x1 = 128 + 7         ' Transparancy Button
+    buttons(16).x2 = 128 + 21
+    buttons(16).y1 = 64 + 7
+    buttons(16).y2 = 64 + 21
+    buttons(16).clr = -1
+    buttons(16).style = "BF"
    
-    button(17).x1 = 128 + 7         ' LMB Color
-    button(17).x2 = 128 + 21
-    button(17).y1 = 32 + 7
-    button(17).y2 = 32 + 21
-    button(17).clr = lmbcolor
-    button(17).style = "BF"
+    buttons(17).x1 = 128 + 7         ' LMB Color
+    buttons(17).x2 = 128 + 21
+    buttons(17).y1 = 32 + 7
+    buttons(17).y2 = 32 + 21
+    buttons(17).clr = lmbcolor
+    buttons(17).style = "BF"
 
-    button(18).x1 = 128 + 7 + 14       ' RMB Color
-    button(18).x2 = 128 + 21 + 14
-    button(18).y1 = 32 + 7
-    button(18).y2 = 32 + 21
-    button(18).clr = rmbcolor
-    button(18).style = "BF"
+    buttons(18).x1 = 128 + 7 + 14       ' RMB Color
+    buttons(18).x2 = 128 + 21 + 14
+    buttons(18).y1 = 32 + 7
+    buttons(18).y2 = 32 + 21
+    buttons(18).clr = rmbcolor
+    buttons(18).style = "BF"
 END SUB
 
 SUB loadbsv
@@ -335,9 +335,9 @@ END SUB
 
 SUB RefreshButtons
     HideMouse
-    LINE (button(16).x1, button(16).y1)-(button(16).x2, button(16).y2), 8, BF
-    LINE (button(17).x1, button(17).y1)-(button(17).x2, button(17).y2), lmbcolor, BF
-    LINE (button(18).x1, button(18).y1)-(button(18).x2, button(18).y2), rmbcolor, BF
+    LINE (buttons(16).x1, buttons(16).y1)-(buttons(16).x2, buttons(16).y2), 8, BF
+    LINE (buttons(17).x1, buttons(17).y1)-(buttons(17).x2, buttons(17).y2), lmbcolor, BF
+    LINE (buttons(18).x1, buttons(18).y1)-(buttons(18).x2, buttons(18).y2), rmbcolor, BF
     ShowMouse
 END SUB
 
