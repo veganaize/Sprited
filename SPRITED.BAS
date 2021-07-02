@@ -105,21 +105,22 @@ DO
 
         '''RMB OVER GRID?'''
         IF bx = 2 THEN
-            HideMouse
             x! = x! - (x! MOD 8 - 1)
             y! = y! - (y! MOD 8 - 1)
           
             IF rmbcolor = -1 THEN
+                HideMouse
                 LINE (x!, y!)-STEP(6, 6), 0, BF
                 LINE (x! + 3, y! + 2)-STEP(1, 1), 8, BF
+                ShowMouse
             ELSE
+                HideMouse
                 LINE (x!, y!)-STEP(6, 6), rmbcolor, BF
+                ShowMouse
             END IF
           
             SaveGridState
             pixelgrid(INT(x! / 8), INT(y! / 8)) = rmbcolor
-            ShowMouse
-           
         END IF  'RMB OVER GRID end
 
     ELSE  'NOT OVER GRID
@@ -255,7 +256,7 @@ LOCATE 18, 8: PRINT ",";
 END SUB
 
 SUB ErasePixelGrid
-'''Paint grid with -1's'''  
+'''Paint grid with -1's''' 
     SaveGridState
     FOR i = 0 TO 15
         FOR j = 0 TO 15
