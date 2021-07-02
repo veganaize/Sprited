@@ -130,31 +130,30 @@ DO
         LOCATE 18, 9: PRINT bx
     END IF 'OVER GRID
 
-    IF bx = 1 THEN 'LMB?
+    '''LMB DOWN ?'''
+    IF bx = 1 THEN
         ' *** Slow way? FOR LOOP -- use table instead **
-        FOR i% = 0 TO 16
-            IF x! >= button(i%).x1 AND x! <= button(i%).x2 AND y! >= button(i%).y1 AND y! <= button(i%).y2 THEN
-                lmbcolor = button(i%).clr
+        FOR i = 0 TO 16
+            IF x! >= button(i).x1 AND x! <= button(i).x2 AND y! >= button(i%).y1 AND y! <= button(i).y2 THEN
+                lmbcolor = button(i).clr
                 RefreshButtons
             END IF
-        NEXT i%
-    END IF 'LMB
-    IF bx = 2 THEN '                                RMB?
+        NEXT i
+
+    '''RMB DOWN ?'''
+    ELSEIF bx = 2 THEN
         ' *** Slow way? FOR LOOP -- use table instead **
-        FOR i% = 0 TO 16
-            IF x! >= button(i%).x1 AND x! <= button(i%).x2 AND y! >= button(i%).y1 AND y! <= button(i%).y2 THEN
-                rmbcolor = button(i%).clr
+        FOR i = 0 TO 16
+            IF x! >= button(i).x1 AND x! <= button(i).x2 AND y! >= button(i).y1 AND y! <= button(i).y2 THEN
+                rmbcolor = button(i).clr
                 RefreshButtons
             END IF
-        NEXT i%
-    END IF '                                        RMB
+        NEXT i
    
-    IF bx = 2 THEN '                                RMB?
-        
-    END IF '                                        RMB
-    IF bx = 4 THEN '                                MMB?
+    '''MMB DOWN ?'''
+    ELSEIF bx = 4 THEN
         SYSTEM
-    END IF '                                        MMB
+    END IF 'MB DOWN
 
     kee = INKEY$
 
@@ -256,7 +255,7 @@ LOCATE 18, 8: PRINT ",";
 END SUB
 
 SUB ErasePixelGrid
-'''Paint grid with -1's''' 
+'''Paint grid with -1's'''
     SaveGridState
     FOR i = 0 TO 15
         FOR j = 0 TO 15
