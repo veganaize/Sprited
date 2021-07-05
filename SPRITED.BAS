@@ -1,4 +1,4 @@
-' SpriteEd 0.22
+' SpriteEd 0.23
 DECLARE SUB GetMouseState ()
 DECLARE SUB ResetMouse ()
 DECLARE SUB ShowMouse ()
@@ -59,8 +59,6 @@ CLS
 
 InstMouseRoutine
 ResetMouse
-ShowMouse
-HideMouse
 
 DrawBackground
 ErasePixelGrid
