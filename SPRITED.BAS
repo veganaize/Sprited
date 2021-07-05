@@ -4,7 +4,7 @@ DECLARE SUB ResetMouse ()
 DECLARE SUB ShowMouse ()
 DECLARE SUB HideMouse ()
 DECLARE SUB DrawBackground ()
-DECLARE SUB SetupMouseRoutines ()
+DECLARE SUB InstMouseRoutine ()
 
 DECLARE SUB savebsv ()
 DECLARE SUB loadbsv ()
@@ -22,16 +22,17 @@ DEFINT A-Z
 
 ON ERROR GOTO errcode
 
-DIM SHARED MouseRoutine0$
-DIM SHARED MouseRoutine1$
-DIM SHARED MouseRoutine2$
-DIM SHARED MouseRoutine3$
+TYPE mousetype
+    x AS INTEGER
+    y AS INTEGER
+    lmb AS INTEGER
+    rmb AS INTEGER
+    mmb AS INTEGER
+END TYPE
+DIM SHARED mouse AS mousetype
 
-DIM SHARED ax AS INTEGER: ax = 0  'mouse sub function
-DIM SHARED bx AS INTEGER: bx = 0  'mouse button status
-DIM SHARED cx AS INTEGER: cx = 0  'mouse column (x co-ord)
-DIM SHARED dx AS INTEGER: dx = 0  'mouse row    (y co-ord)
-
+DIM SHARED MouseRoutineA AS STRING
+DIM SHARED MouseRoutineB AS STRING
 DIM SHARED lmbcolor AS INTEGER: lmbcolor = 3  '     LMB color
 DIM SHARED rmbcolor AS INTEGER: rmbcolor = 15 '     RMB color
 DIM SHARED kee AS STRING: kee = ""
@@ -56,7 +57,7 @@ DIM SHARED redogrid(15, 15) AS INTEGER
 SCREEN 13
 CLS
 
-SetupMouseRoutines
+InstMouseRoutine
 ResetMouse
 ShowMouse
 HideMouse
@@ -72,86 +73,84 @@ ShowMouse
 '''Begin Main Loop'''
 DO
     GetMouseState
-    x! = cx / 2
-    y! = dx
     COLOR lmbcolor
 
     '''OVER GRID?'''
-    IF x! < (16 * 8) AND y! < (16 * 8) THEN
+    IF mouse.x < (16 * 8) AND mouse.y < (16 * 8) THEN
         LOCATE 19, 18: PRINT "true "
-        LOCATE 18, 1: PRINT USING "###"; INT(x! / 8);
-        LOCATE 18, 5: PRINT USING "###"; INT(y! / 8);
+        LOCATE 18, 1: PRINT USING "###"; INT(mouse.x / 8);
+        LOCATE 18, 5: PRINT USING "###"; INT(mouse.y / 8);
         LOCATE 18, 9: PRINT bx
         
         '''LMB DOWN OVER GRID?'''
-        IF bx = 1 THEN
-            x! = x! - (x! MOD 8 - 1)
-            y! = y! - (y! MOD 8 - 1)
+        IF mouse.lmb = 1 THEN
+            mouse.x = mouse.x - (mouse.x MOD 8 - 1)
+            mouse.y = mouse.y - (mouse.y MOD 8 - 1)
            
             IF lmbcolor = -1 THEN
                 HideMouse
-                LINE (x!, y!)-STEP(6, 6), 0, BF
-                LINE (x! + 3, y! + 2)-STEP(1, 1), 8, BF
+                LINE (mouse.x, mouse.y)-STEP(6, 6), 0, BF
+                LINE (mouse.x + 3, mouse.y + 2)-STEP(1, 1), 8, BF
                 ShowMouse
             ELSE
                 HideMouse
-                LINE (x!, y!)-STEP(6, 6), lmbcolor, BF
+                LINE (mouse.x, mouse.y)-STEP(6, 6), lmbcolor, BF
                 ShowMouse
             END IF
            
             SaveGridState
-            pixelgrid(INT(x! / 8), INT(y! / 8)) = lmbcolor
+            pixelgrid(INT(mouse.x / 8), INT(mouse.y / 8)) = lmbcolor
         'END IF  'LMB OVER GRID
 
         '''RMB DOWN OVER GRID?'''
-        ELSEIF bx = 2 THEN
-            x! = x! - (x! MOD 8 - 1)
-            y! = y! - (y! MOD 8 - 1)
+        ELSEIF mouse.rmb = 1 THEN
+            mouse.x = mouse.x - (mouse.x MOD 8 - 1)
+            mouse.y = mouse.y - (mouse.y MOD 8 - 1)
           
             IF rmbcolor = -1 THEN
                 HideMouse
-                LINE (x!, y!)-STEP(6, 6), 0, BF
-                LINE (x! + 3, y! + 2)-STEP(1, 1), 8, BF
+                LINE (mouse.x, mouse.y)-STEP(6, 6), 0, BF
+                LINE (mouse.x + 3, mouse.y + 2)-STEP(1, 1), 8, BF
                 ShowMouse
             ELSE
                 HideMouse
-                LINE (x!, y!)-STEP(6, 6), rmbcolor, BF
+                LINE (mouse.x, mouse.y)-STEP(6, 6), rmbcolor, BF
                 ShowMouse
             END IF
           
             SaveGridState
-            pixelgrid(INT(x! / 8), INT(y! / 8)) = rmbcolor
+            pixelgrid(INT(mouse.x / 8), INT(mouse.y / 8)) = rmbcolor
         END IF  'MB DOWN OVER GRID
 
     ELSE  'NOT OVER GRID
         LOCATE 19, 18: PRINT "false"
-        LOCATE 18, 1: PRINT USING "###"; INT(x!);
-        LOCATE 18, 5: PRINT USING "###"; INT(y!);
+        LOCATE 18, 1: PRINT USING "###"; INT(mouse.x);
+        LOCATE 18, 5: PRINT USING "###"; INT(mouse.y);
         LOCATE 18, 9: PRINT bx
     END IF 'OVER GRID
 
     '''LMB DOWN ?'''
-    IF bx = 1 THEN
+    IF mouse.lmb = 1 THEN
         ' *** Slow way? FOR LOOP -- use table instead **
         FOR i = 0 TO 16
-            IF x! >= buttons(i).x1 AND x! <= buttons(i).x2 AND y! >= buttons(i%).y1 AND y! <= buttons(i).y2 THEN
+            IF mouse.x >= buttons(i).x1 AND mouse.x <= buttons(i).x2 AND mouse.y >= buttons(i%).y1 AND mouse.y <= buttons(i).y2 THEN
                 lmbcolor = buttons(i).clr
                 RefreshButtons
             END IF
         NEXT i
 
     '''RMB DOWN ?'''
-    ELSEIF bx = 2 THEN
+    ELSEIF mouse.rmb = 1 THEN
         ' *** Slow way? FOR LOOP -- use table instead **
         FOR i = 0 TO 16
-            IF x! >= buttons(i).x1 AND x! <= buttons(i).x2 AND y! >= buttons(i).y1 AND y! <= buttons(i).y2 THEN
+            IF mouse.x >= buttons(i).x1 AND mouse.x <= buttons(i).x2 AND mouse.y >= buttons(i).y1 AND mouse.y <= buttons(i).y2 THEN
                 rmbcolor = buttons(i).clr
                 RefreshButtons
             END IF
         NEXT i
    
     '''MMB DOWN ?'''
-    ELSEIF bx = 4 THEN
+    ELSEIF mouse.mmb = 1 THEN
         SYSTEM
     END IF 'MB DOWN
 
@@ -190,23 +189,25 @@ errcode:
 RESUME NEXT
 
 SUB ClearGrid
-    HideMouse
-   
+
     '''ERASE GRID'''
     FOR r = 0 TO 128 STEP 8
         FOR c = 0 TO 128 STEP 8
+            HideMouse
             LINE (c + 1, r + 1)-(c + 7, r + 7), 0, BF
+            ShowMouse
         NEXT c
     NEXT r
 
     '''FILL W/ -1'''
     FOR r = 0 TO 15
         FOR c = 0 TO 15
+            HideMouse
             LINE (c * 8 + 4, r * 8 + 3)-STEP(1, 1), 8, BF 'Draw Boxes
+            ShowMouse
         NEXT c
     NEXT r
 
-    ShowMouse
 END SUB
 
 SUB DrawBackground
@@ -273,14 +274,55 @@ SUB ErasePixelGrid
 END SUB
 
 SUB GetMouseState
-    DEF SEG = VARSEG(MouseRoutine3$)
-    CALL absolute(ax, bx, cx, dx, SADD(MouseRoutine3$))
+   
+    DIM buttonState AS INTEGER
+   
+    DEF SEG = VARSEG(MouseRoutineB)
+        CALL ABSOLUTE(3, buttonState, mouse.x, mouse.y, SADD(MouseRoutineB))
     DEF SEG
+
+    mouse.x = mouse.x / 2
+
+    SELECT CASE buttonState
+    CASE 0
+        mouse.lmb = 0
+        mouse.rmb = 0
+        mouse.mmb = 0
+    CASE 1
+        mouse.lmb = 1
+        mouse.rmb = 0
+        mouse.mmb = 0
+    CASE 2
+        mouse.lmb = 0
+        mouse.rmb = 1
+        mouse.mmb = 0
+    CASE 3
+        mouse.lmb = 1
+        mouse.rmb = 1
+        mouse.mmb = 0
+    CASE 4
+        mouse.lmb = 0
+        mouse.rmb = 0
+        mouse.mmb = 1
+    CASE 5
+        mouse.lmb = 1
+        mouse.rmb = 0
+        mouse.mmb = 1
+    CASE 6
+        mouse.lmb = 0
+        mouse.rmb = 1
+        mouse.mmb = 1
+    CASE 7
+        mouse.lmb = 1
+        mouse.rmb = 1
+        mouse.mmb = 1
+    END SELECT
+
 END SUB
 
 SUB HideMouse
-    DEF SEG = VARSEG(MouseRoutine2$)
-    CALL absolute(ax, bx, cx, dx, SADD(MouseRoutine2$))
+    DEF SEG = VARSEG(MouseRoutineA)
+        CALL ABSOLUTE(2, SADD(MouseRoutineA))
     DEF SEG
 END SUB
 
@@ -305,6 +347,39 @@ SUB InitButtonColors
     buttons(18).y2 = 32 + 21
     buttons(18).clr = rmbcolor
     buttons(18).style = "BF"
+END SUB
+
+SUB InstMouseRoutine
+    ml$ = ""
+    ml$ = ml$ + CHR$(&H55)                          ' push bp
+    ml$ = ml$ + CHR$(&H89) + CHR$(&HE5)             ' mov  bp, sp
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&H6) '   mov bx, [bp+6]
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H7)              '   mov ax, [bx]
+    ml$ = ml$ + CHR$(&HCD) + CHR$(&H33)             '   int  33
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&H6) '   mov bx, [bp+6]
+    ml$ = ml$ + CHR$(&H89) + CHR$(&H7)              '   mov [bx], ax
+    ml$ = ml$ + CHR$(&H5D)                          ' pop bp
+    ml$ = ml$ + CHR$(&HCA) + CHR$(&H2) + CHR$(&H0)  ' retf 2
+    MouseRoutineA = ml$
+
+    ml$ = ""
+    ml$ = ml$ + CHR$(&H55)                          ' push bp
+    ml$ = ml$ + CHR$(&H89) + CHR$(&HE5)             ' mov  bp, sp
+    ml$ = ml$ + CHR$(&HB8) + CHR$(&H3) + CHR$(&H0)  '   mov ax, 3
+    ml$ = ml$ + CHR$(&HCD) + CHR$(&H33)             '   int  33
+    ml$ = ml$ + CHR$(&H53)                          '   push bx
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&H6) '   mov  bx, [bp+6]
+    ml$ = ml$ + CHR$(&H89) + CHR$(&H17)             '   mov  [bx], dx
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&H8) '   mov  bx, [bp+8]
+    ml$ = ml$ + CHR$(&H89) + CHR$(&HF)              '   mov  [bx], cx
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&HC) '   mov  bx, [bp+C]
+    ml$ = ml$ + CHR$(&H89) + CHR$(&HF7)             '   mov  [bx], ax
+    ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&HA) '   mov  bx, [bp+A]
+    ml$ = ml$ + CHR$(&H58)                          '   pop  ax
+    ml$ = ml$ + CHR$(&H89) + CHR$(&H7)              '   mov  [bx], ax
+    ml$ = ml$ + CHR$(&H5D)                          ' pop  bp
+    ml$ = ml$ + CHR$(&HCA) + CHR$(&H8) + CHR$(&H0)  ' retf 8
+    MouseRoutineB = ml$
 END SUB
 
 SUB loadbsv
@@ -350,12 +425,13 @@ SUB RefreshButtons
 END SUB
 
 SUB RefreshGrid
-    HideMouse
 
     '''ERASE GRID'''
     FOR r = 0 TO 128 STEP 8
         FOR c = 0 TO 128 STEP 8
+            HideMouse
             LINE (c + 1, r + 1)-(c + 7, r + 7), 0, BF
+            ShowMouse
         NEXT c
     NEXT r
 
@@ -363,20 +439,23 @@ SUB RefreshGrid
     FOR r = 0 TO 15
         FOR c = 0 TO 15
             IF pixelgrid(c, r) = -1 THEN
+                HideMouse
                 LINE (c * 8 + 4, r * 8 + 3)-STEP(1, 1), 8, BF
+                ShowMouse
             ELSE
+                HideMouse
                 LINE (c * 8 + 1, r * 8 + 1)-(c * 8 + 7, r * 8 + 7), pixelgrid(c, r), BF
+                ShowMouse
             END IF
         NEXT c
     NEXT r
 
-    ShowMouse
 END SUB
 
 DEFSNG A-Z
 SUB ResetMouse
-    DEF SEG = VARSEG(MouseRoutine0$)
-    CALL absolute(ax, bx, cx, dx, SADD(MouseRoutine0$))
+    DEF SEG = VARSEG(MouseRoutineA)
+        CALL ABSOLUTE(0, SADD(MouseRoutineA))
     DEF SEG
 END SUB
 
@@ -423,43 +502,9 @@ FOR i = 0 TO 15
 NEXT i
 END SUB
 
-SUB SetupMouseRoutines
-'''Installs machine language routines for mouse```
-    FOR a% = 0 TO 3
-        ml$ = ""
-        ml$ = ml$ + CHR$(&H55)                          ' push bp
-        ml$ = ml$ + CHR$(&H89) + CHR$(&HE5)             ' mov  bp, sp
-        ml$ = ml$ + CHR$(&HB8) + CHR$(a%) + CHR$(&H0)   '   mov  ax, #
-        ml$ = ml$ + CHR$(&HCD) + CHR$(&H33)             '   int  33
-        ml$ = ml$ + CHR$(&H53)                          '   push bx
-        ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&H6) '   mov  bx, [bp+6]
-        ml$ = ml$ + CHR$(&H89) + CHR$(&H17)             '   mov  (bx), dx
-        ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&H8) '   mov  bx, [bp+8]
-        ml$ = ml$ + CHR$(&H89) + CHR$(&HF)              '   mov  [bx], cx
-        ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&HC) '   mov  bx, [bp+C]
-        ml$ = ml$ + CHR$(&H89) + CHR$(&HF7)             '   mov  [bx], ax
-        ml$ = ml$ + CHR$(&H8B) + CHR$(&H5E) + CHR$(&HA) '   mov  bx, [bp+A]
-        ml$ = ml$ + CHR$(&H58)                          '   pop  ax
-        ml$ = ml$ + CHR$(&H89) + CHR$(&H7)              '   mov  [bx], ax
-        ml$ = ml$ + CHR$(&H5D)                          ' pop  bp
-        ml$ = ml$ + CHR$(&HCA) + CHR$(&H8) + CHR$(&H0)  ' retf 8
-    
-        SELECT CASE a%
-        CASE 0
-            MouseRoutine0$ = ml$
-        CASE 1
-            MouseRoutine1$ = ml$
-        CASE 2
-            MouseRoutine2$ = ml$
-        CASE 3
-            MouseRoutine3$ = ml$
-        END SELECT
-    NEXT a%
-END SUB
-
 SUB ShowMouse
-    DEF SEG = VARSEG(MouseRoutine1$)
-    CALL absolute(ax, bx, cx, dx, SADD(MouseRoutine1$))
+    DEF SEG = VARSEG(MouseRoutineA)
+        CALL ABSOLUTE(1, SADD(MouseRoutineA))
     DEF SEG
 END SUB
 
@@ -471,24 +516,26 @@ FOR j = 0 TO 15
 NEXT j
 NEXT i
 
-HideMouse
-
 FOR r = 0 TO 128 STEP 8     'ERASE GRID
     FOR c = 0 TO 128 STEP 8
+        HideMouse
         LINE (c + 1, r + 1)-(c + 7, r + 7), 0, BF
+        ShowMouse
     NEXT c
 NEXT r
 FOR r = 0 TO 15     'DRAW IMAGE
     FOR c = 0 TO 15
         IF pixelgrid(c, r) = -1 THEN
+            HideMouse
             LINE (c * 8 + 4, r * 8 + 3)-STEP(1, 1), 8, BF
+            ShowMouse
         ELSE
+            HideMouse
             LINE (c * 8 + 1, r * 8 + 1)-(c * 8 + 7, r * 8 + 7), pixelgrid(c, r), BF
+            ShowMouse
         END IF
     NEXT c
 NEXT r
 
-ShowMouse
-   
 END SUB
 
